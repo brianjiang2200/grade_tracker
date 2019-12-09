@@ -24,13 +24,18 @@ fn main() {
 	loop {
 		command.clear(); 
 		io::stdin().read_line(&mut command)
-			.expect("Failed to read line"); 
-		process(command.to_string());
+			.expect("Failed to read line");
+		command = command.trim().to_string(); 
+		match command.as_ref() {
+			"quit" => break,
+			"exit" => break, 
+			_ => process(command), 
+		}
 	}
 }
 
 fn process(command: String) { 
-	match command.trim().as_ref() {
+	match command.as_ref() {
 	"addcourse" => courses::addcourse(),
 	"rmcourse" => println!("Removing course"),
 	"view" => println!("View Course Breakdown"), 
@@ -38,7 +43,7 @@ fn process(command: String) {
 	"add" => println!("Add summative"), 
 	"try" => println!("View impact of hypothetical score"), 
 	"hide" => println!("See score without weight of summative"),
-	_ => println!("Unrecognized Command"),
-	"help" => bash::help(); 
+	"help" => bash::help(), 
+	_ => println!("Unrecognized Command"), 
 	}
 }
