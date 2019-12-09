@@ -15,7 +15,8 @@ use std::io;
 use std::io::prelude::*;
 use std::error::Error; 
 
-mod courses;   
+mod courses;
+mod bash; 
 
 fn main() { 
 	let mut command = String::new(); 
@@ -37,6 +38,7 @@ fn process(command: String) {
 	"add" => println!("Add summative"), 
 	"try" => println!("View impact of hypothetical score"), 
 	"hide" => println!("See score without weight of summative"),
-	_ => println!("Unrecognized Command"), 
+	_ => println!("Unrecognized Command"),
+	"help" => bash::help(); 
 	}
 }
