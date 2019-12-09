@@ -72,6 +72,7 @@ pub fn view() -> std::io::Result<()> {
 	json_file_name.push_str(".json");
 	
 	let contents = fs::read_to_string(json_file_name)?;
+	contents = json::parse(contents).unwrap(); 
 	
 	//print course name
 	assert!(contents["courseName"] == course_name);
