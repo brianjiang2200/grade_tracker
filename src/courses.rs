@@ -57,3 +57,20 @@ pub fn rmcourse() -> std::io::Result<()> {
 	
 	Ok(());
 }
+
+pub fn view() -> std::io::Result<()> {
+	//Enter Course Name 
+	let mut course_name = String::new(); 
+	println!("Course to View?:"); 
+	io::stdin().read_line(&mut course_name)
+		.expect("Failed to read course name"); 
+	
+	//Check if course exists
+	course_name = course_name.trim().to_string(); 
+	let mut json_file_name = String::from("data/"); 
+	json_file_name.push_str(&course_name); 
+	json_file_name.push_str(".json");
+	
+	let contents = fs::read_to_string(json_file_name)?; 
+	Ok(()); 
+}
