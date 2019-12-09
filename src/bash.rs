@@ -1,4 +1,4 @@
-pub fn bash() {
+pub fn help() {
   println!("addcourse [coursename]"); 
   println!("\tAdd a new course"); 
   
