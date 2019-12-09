@@ -71,6 +71,25 @@ pub fn view() -> std::io::Result<()> {
 	json_file_name.push_str(&course_name); 
 	json_file_name.push_str(".json");
 	
-	let contents = fs::read_to_string(json_file_name)?; 
+	let contents = fs::read_to_string(json_file_name)?;
+	
+	//print course name
+	assert!(contents["courseName"] == course_name);
+	println!("{}", course_name\n); 
+	
+	//print Summatives
+	println!("Summatives:");
+	
+	let mut k = 0; 
+	while !contents["Summatives"][k].is_null() {
+		println!("\tName: {}", contents["Summatives"][k]["Name"]); 
+		println!("\tScore: {}", contents["Summatives"][k]["Score"]); 
+		println!("\tWeight: {}", contents["Summatives"][k]["Weight"]);
+		println!("\n"); 
+		k+=1; 
+	}
+	
+	println!("Current/Projected Average: {}", contents["Average"]); 
+	println!("Lazy Average: {}", contents["Lazy Average"]); 
 	Ok(()); 
 }
