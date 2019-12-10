@@ -48,6 +48,12 @@ fn process(command: &String) {
 			Err(why) => println!("Could not view specified course: {}\n", why)
 		}
 	}
+	"list" => {
+		match courses::list() {
+			Ok(()) => println!("\n"),
+			Err(why) => println!("Could not list courses: {}\n", why)
+		}
+	}
 	"gpa" => println!("View GPA"), 
 	"add" => println!("Add summative"), 
 	"try" => println!("View impact of hypothetical score"), 

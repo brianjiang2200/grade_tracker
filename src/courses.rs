@@ -2,8 +2,10 @@ use std::io;
 use std::io::prelude::*;
 use std::error::Error; 
 use std::fs;
-use std::fs::File;
+use std::fs::File; 
+use std::fs::DirEntry;
 use std::path::Path;
+use std::env;
 
 use json; 
 use json::object;
@@ -97,4 +99,21 @@ pub fn view() -> std::io::Result<()> {
 		println!("The course specified does not exist."); 
 	}
 	Ok(()) 
+}
+
+pub fn list() -> std::io::Result<()> {
+	let path = Path::new("data"); 
+	let paths = fs::read_dir(&path)?; 
+	let names = 
+	paths.filter_map(|entry| {
+		entry.ok().and_then(|e|
+			e.path().file_name()
+				.and_then(|n| n.to_str().map(|s| String::from(s)))
+	)
+	}).collect::<Vec<String>>();
+	for elem in &names {
+		let course_name = jsondata::extract_name(&elem); 
+		println!("{}", course_name); 
+	}
+	Ok(())
 }
