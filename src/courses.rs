@@ -2,11 +2,15 @@ use std::io;
 use std::io::prelude::*;
 use std::error::Error; 
 use std::fs;
-use std::fs::OpenOptions;
 use std::fs::File;
 use std::path::Path;
 
+use json; 
 use json::object;
+use serde_json::Value; 
+
+#[path = "jsondata.rs"]
+mod jsondata;  
 
 pub fn addcourse() {
 	//Enter Course Name
@@ -17,9 +21,7 @@ pub fn addcourse() {
 
 	//Generate new JSON File 
 	course_name = course_name.trim().to_string(); 
-	let mut json_file_name = String::from("data/"); 
-	json_file_name.push_str(&course_name); 
-	json_file_name.push_str(".json"); 
+	let json_file_name = jsondata::new_json(&course_name);  
 	
 	let path = Path::new(&json_file_name); 
 	let display = path.display(); 
@@ -31,7 +33,9 @@ pub fn addcourse() {
 	
 	//create JSON object
 	let course_object = object!{
-		"courseName" => course_name 
+		"courseName" => course_name,
+		"Average" => "N/A",
+		"Lazy Average" => "N/A"
 	};
 	
 	match course_file.write_all(course_object.dump().as_bytes()) {
@@ -49,13 +53,11 @@ pub fn rmcourse() -> std::io::Result<()> {
 	
 	//delete JSON File
 	course_name = course_name.trim().to_string(); 
-	let mut json_file_name = String::from("data/"); 
-	json_file_name.push_str(&course_name); 
-	json_file_name.push_str(".json"); 
+	let json_file_name = jsondata::new_json(&course_name);  
 	
 	fs::remove_file(json_file_name)?; 
 	
-	Ok(());
+	Ok(())
 }
 
 pub fn view() -> std::io::Result<()> {
@@ -63,34 +65,36 @@ pub fn view() -> std::io::Result<()> {
 	let mut course_name = String::new(); 
 	println!("Course to View?:"); 
 	io::stdin().read_line(&mut course_name)
-		.expect("Failed to read course name"); 
+		.expect("Failed to read course name");		
 	
-	//Check if course exists
 	course_name = course_name.trim().to_string(); 
-	let mut json_file_name = String::from("data/"); 
-	json_file_name.push_str(&course_name); 
-	json_file_name.push_str(".json");
+	let json_file_name = jsondata::new_json(&course_name);
+
+	//Check if course exists
+	if Path::new(&json_file_name).exists() {
 	
-	let contents = fs::read_to_string(json_file_name)?;
-	contents = json::parse(contents).unwrap(); 
-	
-	//print course name
-	assert!(contents["courseName"] == course_name);
-	println!("{}", course_name\n); 
-	
-	//print Summatives
-	println!("Summatives:");
-	
-	let mut k = 0; 
-	while !contents["Summatives"][k].is_null() {
-		println!("\tName: {}", contents["Summatives"][k]["Name"]); 
-		println!("\tScore: {}", contents["Summatives"][k]["Score"]); 
-		println!("\tWeight: {}", contents["Summatives"][k]["Weight"]);
+		let contents = fs::read_to_string(json_file_name)?;
+		let course: Value = serde_json::from_str(&contents).unwrap();  
+
+		//print Summatives
 		println!("\n"); 
-		k+=1; 
+		println!("Summatives:");
+	
+		let mut k = 0; 
+		while !course["Summatives"][k].is_null() {
+			println!("\tName: {}", course["Summatives"][k]["Name"]); 
+			println!("\tScore: {}", course["Summatives"][k]["Score"]); 
+			println!("\tWeight: {}", course["Summatives"][k]["Weight"]);
+			println!("\n"); 
+			k+=1; 
+		}
+	
+		println!("Current/Projected Average: {}", course["Average"]); 
+		println!("Lazy Average: {}", course["Lazy Average"]);
 	}
 	
-	println!("Current/Projected Average: {}", contents["Average"]); 
-	println!("Lazy Average: {}", contents["Lazy Average"]); 
-	Ok(()); 
+	else {
+		println!("The course specified does not exist."); 
+	}
+	Ok(()) 
 }

@@ -6,7 +6,7 @@ pub fn help() {
   println!("\tRemove an existing course"); 
   
   println!("view [coursename]"); 
-  println!("View current course breakdown"); 
+  println!("\tView current course breakdown"); 
   
   println!("gpa"); 
   println!("\tView cumulative average"); 

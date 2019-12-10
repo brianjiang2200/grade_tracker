@@ -11,16 +11,15 @@
 //try [summative name][coursename][score(percentage or raw)][weight]
 //hide [summative name][coursename]
 
-use std::io;
-use std::io::prelude::*;
-use std::error::Error; 
+use std::io; 
 
 mod courses;
-mod bash; 
+mod bash;
+mod jsondata;  
 
 fn main() { 
 	let mut command = String::new(); 
-	println!("Welcome to GradeTracker!"); 
+	println!("Welcome to GradeTracker!\n"); 
 	loop {
 		command.clear(); 
 		io::stdin().read_line(&mut command)
@@ -29,21 +28,31 @@ fn main() {
 		match command.as_ref() {
 			"quit" => break,
 			"exit" => break, 
-			_ => process(command), 
+			_ => process(&command), 
 		}
 	}
 }
 
-fn process(command: String) { 
+fn process(command: &String) { 
 	match command.as_ref() {
 	"addcourse" => courses::addcourse(),
-	"rmcourse" => println!("Removing course"),
-	"view" => println!("View Course Breakdown"), 
+	"rmcourse" => {
+		match courses::rmcourse() {
+			Ok(()) => println!("Successfully removed course.\n"), 
+			Err(why) => println!("Removing course was unsuccessful: {}\n", why) 
+		}
+	},
+	"view" => {
+		match courses::view() {
+			Ok(()) => println!("\n"), 
+			Err(why) => println!("Could not view specified course: {}\n", why)
+		}
+	}
 	"gpa" => println!("View GPA"), 
 	"add" => println!("Add summative"), 
 	"try" => println!("View impact of hypothetical score"), 
 	"hide" => println!("See score without weight of summative"),
 	"help" => bash::help(), 
-	_ => println!("Unrecognized Command"), 
+	_ => println!("Unrecognized Command\n"), 
 	}
 }
