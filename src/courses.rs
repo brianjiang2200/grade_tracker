@@ -2,10 +2,11 @@ use std::io;
 use std::io::prelude::*;
 use std::error::Error; 
 use std::fs;
-use std::fs::File; 
-use std::fs::DirEntry;
+use std::fs::File;
 use std::path::Path;
 use std::env;
+
+use glob::glob; 
 
 use json; 
 use json::object;
@@ -102,8 +103,28 @@ pub fn view() -> std::io::Result<()> {
 }
 
 pub fn list() -> std::io::Result<()> {
-	let path = Path::new("data"); 
-	let paths = fs::read_dir(&path)?; 
+	let mut file_vec = Vec::new(); 
+	for entry in glob("data/*.JSON").expect("Failed to read glob pattern") {
+		match entry {
+			Ok(path) => {
+				println!("{:?}", path.display());
+				let file_name = match path.file_name() {
+					Ok(file) => file, 
+					Err(why) => println!("Error extracting path file name: {}", why)
+				};
+				let file_name_as_str = file_name.to_str();
+				let file_name_as_string = String::from(file_name_as_str); 
+				file_vec.push(file_name_as_string); 
+			}
+			Err(e) => println!("Could not get path: {}", e) 
+		}
+	}
+	for member in &file_vec {
+		println!("{}", jsondata::extract_name(&member)); 
+	}
+	
+	/*let path = Path::new(".\\data");
+	let paths = fs::read_dir(&path).unwrap(); 
 	let names = 
 	paths.filter_map(|entry| {
 		entry.ok().and_then(|e|
@@ -114,6 +135,6 @@ pub fn list() -> std::io::Result<()> {
 	for elem in &names {
 		let course_name = jsondata::extract_name(&elem); 
 		println!("{}", course_name); 
-	}
+	}*/
 	Ok(())
 }
