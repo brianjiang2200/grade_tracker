@@ -15,7 +15,8 @@ use std::io;
 
 mod courses;
 mod bash;
-mod jsondata;  
+mod jsondata;
+mod summative;   
 
 fn main() { 
 	let mut command = String::new(); 
@@ -24,10 +25,10 @@ fn main() {
 		command.clear(); 
 		io::stdin().read_line(&mut command)
 			.expect("Failed to read line");
-		command = command.trim().to_string(); 
+		command = command.trim().to_string().to_ascii_uppercase(); 
 		match command.as_ref() {
-			"quit" => break,
-			"exit" => break, 
+			"QUIT" => break,
+			"EXIT" => break, 
 			_ => process(&command), 
 		}
 	}
@@ -35,30 +36,35 @@ fn main() {
 
 fn process(command: &String) { 
 	match command.as_ref() {
-	"addcourse" => courses::addcourse(),
-	"rmcourse" => {
+	"ADDCOURSE" => courses::addcourse(),
+	"RMCOURSE" => {
 		match courses::rmcourse() {
 			Ok(()) => println!("Successfully removed course.\n"), 
 			Err(why) => println!("Removing course was unsuccessful: {}\n", why) 
 		}
 	},
-	"view" => {
+	"VIEW" => {
 		match courses::view() {
 			Ok(()) => println!("\n"), 
 			Err(why) => println!("Could not view specified course: {}\n", why)
 		}
-	}
-	"list" => {
+	},
+	"LIST" => {
 		match courses::list() {
 			Ok(()) => println!("\n"),
 			Err(why) => println!("Could not list courses: {}\n", why)
 		}
-	}
-	"gpa" => println!("View GPA"), 
-	"add" => println!("Add summative"), 
-	"try" => println!("View impact of hypothetical score"), 
-	"hide" => println!("See score without weight of summative"),
-	"help" => bash::help(), 
+	},
+	"AVG" => {
+		match courses::gpa() {
+			Ok(()) => println!("\n"), 
+			Err(why) => println!("Could not compute gpa: {}\n", why)
+		}
+	}, 
+	"ADD" => println!("Add summative"), 
+	"TRY" => println!("View impact of hypothetical score"), 
+	"HIDE" => println!("See score without weight of summative"),
+	"HELP" => bash::help(), 
 	_ => println!("Unrecognized Command\n"), 
 	}
 }

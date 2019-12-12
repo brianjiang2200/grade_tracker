@@ -3,8 +3,7 @@ use std::io::prelude::*;
 use std::error::Error; 
 use std::fs;
 use std::fs::File;
-use std::path::Path;
-use std::env;
+use std::path::Path; 
 
 use glob::glob; 
 
@@ -36,15 +35,17 @@ pub fn addcourse() {
 	
 	//create JSON object
 	let course_object = object!{
-		"courseName" => course_name,
-		"Average" => "N/A",
-		"Lazy Average" => "N/A"
+		"courseName" => course_name.to_ascii_uppercase(),
+		"Average" => "0",
+		"Lazy Average" => "0"
 	};
 	
 	match course_file.write_all(course_object.dump().as_bytes()) {
 		Err(why) => panic!("couldn't write to {}: {}", display, why.description()), 
 		Ok(_) => println!("successfully added course."), 
 	}
+	
+	println!("\n"); 
 }
 
 pub fn rmcourse() -> std::io::Result<()> {
@@ -103,22 +104,49 @@ pub fn view() -> std::io::Result<()> {
 }
 
 pub fn list() -> std::io::Result<()> {
-	//let mut file_vec = Vec::new(); 
+	//Initialize Vector to contain string copies of file paths
+	let mut file_vec = Vec::new(); 
+	//Get all files in directory data with extension .JSON
 	for entry in glob("data/*.JSON").expect("Failed to read glob pattern") {
 		match entry {
 			Ok(path) => {
-				println!("{:?}", path.display());
-				/*let file_name = path.file_name().expect("Cannot extract file name"); 
-				let file_name_as_str = file_name.to_str();
-				let file_name_as_string = String::from(file_name_as_str); 
-				file_vec.push(file_name_as_string);*/ 
-			}
+				let file_name = path.to_string_lossy().into_owned(); 
+				file_vec.push(file_name); 
+			},
 			Err(e) => println!("Could not get path: {}", e) 
 		}
 	}
-	/*for member in &file_vec {
-		println!("{}", jsondata::extract_name(&member)); 
-	}*/
+	for member in &file_vec {
+		println!("{}", jsondata::extract_name(&member).to_ascii_uppercase()); 
+	}
+	Ok(())
+}
+
+pub fn gpa() -> std::io::Result<()> {
+	let mut cumulative = 0; 
+	let mut course_count = 0;
+	for entry in glob("data/*.JSON").expect("Failed to read glob pattern") {
+		match entry {
+			Ok(path) => {
+				let mystr = path.to_string_lossy().into_owned(); 
+				let contents = fs::read_to_string(mystr)?;
+				let course: Value = serde_json::from_str(&contents).unwrap(); 
+				cumulative += match course["Average"].as_u64() {
+					Some(num) => num, 
+					None => 0
+				};
+				course_count += 1;
+			},
+			Err(e) => println!("Could not get path: {}", e) 
+		}
+	}
+	if course_count > 0 {
+		let average = cumulative as f64 /course_count as f64;
+		println!("{}", average);
+	}
+	else {
+		println!("No courses to compute GPA"); 
+	}
 	
 	Ok(())
 }
