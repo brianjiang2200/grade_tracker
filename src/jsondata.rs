@@ -1,4 +1,5 @@
 use std::fs;
+use serde::{Serialize, Deserialize};
 use serde_json::Value;   
 
 #[allow(dead_code)]
@@ -17,3 +18,16 @@ pub fn new_json(course_name: &String) -> String {
   
   course["courseName"].to_string() 
  }
+ 
+ struct Course {
+	courseName: String, 
+	Average: u32, 
+	Lazy: u32, 
+	Summatives: Vec<Summative>, 
+}
+
+struct Summative {
+	Name: String, 
+	Score: u32,
+	Weight: u32,
+}

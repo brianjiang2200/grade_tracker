@@ -6,6 +6,7 @@
 //addcourse [coursename]
 //rmcourse [coursename] (if it exists)
 //view [coursename]
+//list
 //gpa
 //add [summative name][coursename][score (percentage or raw)][weight] 
 //try [summative name][coursename][score(percentage or raw)][weight]
@@ -61,7 +62,10 @@ fn process(command: &String) {
 			Err(why) => println!("Could not compute gpa: {}\n", why)
 		}
 	}, 
-	"ADD" => println!("Add summative"), 
+	"ADD" => match summative::add() {
+		Ok(()) => println!("Successfully added summative\n"), 
+		Err(why) => println!("Could not add summative\n")
+	}, 
 	"TRY" => println!("View impact of hypothetical score"), 
 	"HIDE" => println!("See score without weight of summative"),
 	"HELP" => bash::help(), 

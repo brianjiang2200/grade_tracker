@@ -9,6 +9,7 @@ use glob::glob;
 
 use json; 
 use json::object;
+use serde::{Serialize, Deserialize}; 
 use serde_json::Value; 
 
 #[path = "jsondata.rs"]
@@ -36,8 +37,8 @@ pub fn addcourse() {
 	//create JSON object
 	let course_object = object!{
 		"courseName" => course_name.to_ascii_uppercase(),
-		"Average" => "0",
-		"Lazy Average" => "0"
+		"Average" => 0,
+		"Lazy Average" => 0
 	};
 	
 	match course_file.write_all(course_object.dump().as_bytes()) {
