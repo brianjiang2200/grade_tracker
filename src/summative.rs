@@ -20,17 +20,9 @@ pub fn add() -> std::io::Result<()> {
 	get_summative_info(&mut course_name, &mut sum_name, &mut score, &mut weight); 
 	
 	//Find correct File 
-	let json_file_name = jsondata::new_json(&course_name); 
+	let json_file_name = jsondata::new_json(&course_name);
+	let path = Path::new(&json_file_name); 
 	
-	if Path::new(&json_file_name).exists() {
-		let contents = fs::read_to_string(json_file_name)?;
-		let course: Value = serde_json::from_str(&contents).unwrap(); 
-		
-		
-	}
-	else {
-		println!("Terminating process...The course specified does not exist."); 
-	}
 	Ok(())
 }
 
@@ -70,5 +62,19 @@ fn get_summative_info(course_name: &mut String, sum_name: &mut String, score: &m
 			Err(_) => continue,
 		}; 
 		break; 
+	}
+}
+
+fn list(file_name: String) -> std::io::Result<()> {
+	//should be called only when file is guaranteed to exist
+	let contents = fs::read_to_string(file_name)?;
+	let course: Value = serde_json::from_str(&contents).unwrap(); 
+		
+	println!("\nSummatives:"); 
+		
+	let mut k = 0; 
+	while !course[Summatives"][k].is_null() {
+		println!("\tName: {}", course[Summatives"][k]["Name"]);
+		k += 1;
 	}
 }
