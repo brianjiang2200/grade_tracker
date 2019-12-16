@@ -12,27 +12,64 @@ mod jsondata;
 
 pub fn add() -> std::io::Result<()> {
 
-	let mut course_name = String::new(); 
+	let mut course_name = String::new();
+	println!("Course Name/Code:"); 
+	io::stdin().read_line(&mut course_name)
+		.expect("Failed to read Course Name"); 
+	course_name = String::from(course_name.trim().to_string()); 
+	
 	let mut sum_name = String::new();
 	let mut score = 0;
 	let mut weight = 0;
 	
-	get_summative_info(&mut course_name, &mut sum_name, &mut score, &mut weight); 
-	
 	//Find correct File 
 	let json_file_name = jsondata::new_json(&course_name);
-	let path = Path::new(&json_file_name); 
+	let path = Path::new(&json_file_name);
+	
+	if path.exists() {
+		list(&json_file_name)?; 
+		
+		//ask for new summative info
+		get_summative_info(&mut sum_name, &mut score, &mut weight); 
+		
+		let contents = fs::read_to_string(json_file_name)?; 
+		let deserialized: Course = serde_json::from_str(contents).unwrap(); 
+		
+		//check if a summative already uses the provided name
+		let mut name_taken = false; 
+		for entry in &deserialized.Summatives {
+			if entry.Name == sum_name {
+				name_taken = true; 
+				break; 
+			}
+		}
+		
+		if !name_taken {
+			let new_summative: Summative = Summative {Name: sum_name, Score: score, Weight: weight}; 
+			deserialized.Summatives.push(new_summative); 
+			let serialized = serde_json::to_string(&deserialized).unwrap(); 
+			
+			let mut course_file = match File::open(&path) {
+				Err(why) => panic!("Could not open file to add summative information...{}", why.description()), 
+				Ok(course_file) => course_file,
+			}; 
+			
+			match course_file.write_all(serialized.as_bytes()) {
+				Err(why) => panic!("Could not write summative information to file...{}", why.description()), 
+				Ok(_) => println!("Successfully added Summative."), 
+			}
+		}
+		else {
+			println!("Terminating process...A summative with the same name already exists.");
+		}
+	}
 	
 	Ok(())
 }
 
 //non public function
-fn get_summative_info(course_name: &mut String, sum_name: &mut String, score: &mut u32, weight: &mut u32) { 
-	println!("Course Name/Code:");
-	io::stdin().read_line(course_name)
-		.expect("Failed to read Course Name");
-	*course_name = String::from(course_name.trim().to_string()); 
-		
+fn get_summative_info(sum_name: &mut String, score: &mut u32, weight: &mut u32) { 
+
 	println!("Summative Name:"); 
 	io::stdin().read_line(sum_name)
 		.expect("Failed to read Summative Name");
@@ -65,7 +102,7 @@ fn get_summative_info(course_name: &mut String, sum_name: &mut String, score: &m
 	}
 }
 
-fn list(file_name: String) -> std::io::Result<()> {
+fn list(file_name: &String) -> std::io::Result<()> {
 	//should be called only when file is guaranteed to exist
 	let contents = fs::read_to_string(file_name)?;
 	let course: Value = serde_json::from_str(&contents).unwrap(); 
@@ -77,4 +114,6 @@ fn list(file_name: String) -> std::io::Result<()> {
 		println!("\tName: {}", course[Summatives"][k]["Name"]);
 		k += 1;
 	}
+
+	Ok(())
 }
