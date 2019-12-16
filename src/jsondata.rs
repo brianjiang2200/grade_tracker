@@ -1,8 +1,9 @@
+#![allow(non_snake_case)]
+#![allow(dead_code)]
+
 use std::fs;
 use serde::{Serialize, Deserialize};
 use serde_json::Value;   
-
-#[allow(dead_code)]
 
 pub fn new_json(course_name: &String) -> String {
   let mut json_file = String::from("data/"); 
@@ -19,6 +20,7 @@ pub fn new_json(course_name: &String) -> String {
   course["courseName"].to_string() 
  }
  
+ #[derive(Serialize, Deserialize)]
  struct Course {
 	courseName: String, 
 	Average: u32, 
@@ -26,6 +28,7 @@ pub fn new_json(course_name: &String) -> String {
 	Summatives: Vec<Summative>, 
 }
 
+#[derive(Serialize, Deserialize)]
 struct Summative {
 	Name: String, 
 	Score: u32,
