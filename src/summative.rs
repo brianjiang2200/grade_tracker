@@ -63,6 +63,9 @@ pub fn add() -> std::io::Result<()> {
 			println!("Terminating process...A summative with the same name already exists.");
 		}
 	}
+	else {
+		println!("Terminating process...The course {} does not exist.", course_name); 
+	}
 	
 	Ok(())
 }
@@ -140,10 +143,71 @@ pub fn edit() -> std::io::Result<()> {
 	Ok(())
 }
 
+pub fn delete() -> std::io::Result<()> {
+
+	let mut course_name = String::new();
+	println!("Course Name/Code:"); 
+	io::stdin().read_line(&mut course_name)
+		.expect("Failed to read Course Name"); 
+	course_name = String::from(course_name.trim().to_string()); 
+	
+	let mut sum_name = String::new();
+	let mut score = 0;
+	let mut weight = 0;
+	
+	let mut summative_exists = false; 
+	
+	//Find correct File 
+	let json_file_name = jsondata::new_json(&course_name);
+	let path = Path::new(&json_file_name);
+	
+	if path.exists() {
+		list(&json_file_name)?; 
+		
+		//get summative name only
+		println!("Summative Name: ");
+		io::stdin().read_line(&mut sum_name)
+			.expect("Failed to read summative name.");
+		sum_name = String::from(sum_name.trim().to_string()); 
+		
+		let contents = fs::read_to_string(json_file_name)?; 
+		let deserialized: Course = serde_json::from_str(contents).unwrap(); 
+		
+		for entry in deserialized.Summatives {
+			if entry.Name == sum_name {
+				summative_exists = true; 
+				deserialized.Summatives.remove(entry); 
+				let serialized = serde_json::to_string(&deserialized).unwrap(); 
+					
+				let mut course_file = match File::open(&path) {
+					Err(why) => panic!("Could not open file to delete summative info...{}", why.description()),
+					Ok(course_file) => course_file,
+				};
+					
+				match course_file.write_all(serialized.as_bytes()) {
+					Err(why) => panic!("Could not write update course data to file...{}", why.description()), 
+					Ok(_) => println!("Successfully edited course data."),
+				}
+					
+				break;
+			}
+		}
+		
+		if !summative_exists {
+			println!("Nothing to remove...The summative {} does not exist", sum_name);
+		}
+	}
+	else {
+		println!("Terminating process...The course {} does not exist.", course_name);
+	}
+	
+	Ok(())
+}
+
 //non public function
 fn get_summative_info(sum_name: &mut String, score: &mut u32, weight: &mut u32) { 
 
-	println!("Summative Name:"); 
+	println!("Summative Name: "); 
 	io::stdin().read_line(sum_name)
 		.expect("Failed to read Summative Name");
 	*sum_name = String::from(sum_name.trim().to_string()); 
