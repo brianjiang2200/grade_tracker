@@ -38,7 +38,8 @@ pub fn addcourse() {
 	let course_object = object!{
 		"courseName" => course_name.to_ascii_uppercase(),
 		"Average" => 0,
-		"Lazy Average" => 0
+		"Lazy" => 0,
+		"Summatives" => []
 	};
 	
 	match course_file.write_all(course_object.dump().as_bytes()) {
