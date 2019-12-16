@@ -67,6 +67,79 @@ pub fn add() -> std::io::Result<()> {
 	Ok(())
 }
 
+pub fn edit() -> std::io::Result<()> {
+	
+	let mut course_name = String::new();
+	println!("Course Name/Code:"); 
+	io::stdin().read_line(&mut course_name)
+		.expect("Failed to read Course Name"); 
+	course_name = String::from(course_name.trim().to_string()); 
+	
+	let mut sum_name = String::new();
+	let mut score = 0; 
+	let mut weight = 0; 
+
+	//Find correct file
+	let json_file_name = jsondata::new_json(&course_name);
+	let path = Path::new(&json_file_name); 
+
+	if path.exists() {
+	
+		list(&json_file_name)?; 
+		
+		let mut index = -1; 
+		loop {
+			let mut cand = String::new(); 
+			println!("Enter the index of the summative to edit from the list above");
+			io::stdin().read_line(&mut cand)
+				.expect("Failed to read input"); 
+			index = match cand.trim().parse() {
+				Ok(num) => num, 
+				Err(_) => continue,
+			};
+			break; 
+		}
+		
+		if (index > 0) {
+			get_summative_info(&mut sum_name, &mut score, &mut weight); 
+			
+			let contents = fs::read_to_string(json_file_name)?;
+			let course_object: Value = serde_json::from_str(&contents).unwrap();
+			
+			if !course["Summatives"][index - 1].is_null() {
+			
+				course_object["Summatives"][index - 1]["Name"] = sum_name.to_ascii_uppercase(); 
+				course_object["Summatives"][index - 1]["Score"] = score; 
+				course_object["Summatives"][index - 1]["Weight"] = weight;
+				
+				let mut course_file = match File::open(&path) {
+					Err(why) => panic!("Could not open file to add summative information...{}", why.description()),
+					Ok(course_file) => course_file,
+				}; 
+			
+				match course_file.write_all(course_object.dump().as_bytes()) {
+					Err(why) => panic!("Could not write summative information to file...{}", why.description()),
+					Ok(_) => println!("Successfully edited Summative."),
+				}
+			}
+			
+			else {
+				println!("Terminating Process Gracefully...Invalid Index");
+				return Ok(()); 
+			}
+			
+		}
+		else {
+			return Ok(());
+		}
+	}
+	else {
+		println!("Terminating process...The course {} does not exist.", course_name); 
+	}
+	
+	Ok(())
+}
+
 //non public function
 fn get_summative_info(sum_name: &mut String, score: &mut u32, weight: &mut u32) { 
 
@@ -111,9 +184,10 @@ fn list(file_name: &String) -> std::io::Result<()> {
 		
 	let mut k = 0; 
 	while !course[Summatives"][k].is_null() {
-		println!("\tName: {}", course[Summatives"][k]["Name"]);
+		println!("\t{}.Name: {}", k, course[Summatives"][k]["Name"]);
 		k += 1;
 	}
-
+	
+	println!("\n"); 
 	Ok(())
 }
