@@ -1,3 +1,5 @@
+//substitutes as a bash file
+
 pub fn help() {
   println!("addcourse"); 
   println!("\tAdd a new course"); 

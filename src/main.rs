@@ -69,7 +69,10 @@ fn process(command: &String) {
 		Ok(()) => println!("\n"),
 		Err(why) => println!("Could not delete summative: {}\n", why)
 	},
-	"TRY" => println!("View impact of hypothetical score"), 
+	"TRY" => match summative::try_grade() {
+		Ok(()) => println!("\n"), 
+		Err(why) => println!("Could not show hypothetical grade {}\n", why)
+	},
 	"HIDE" => println!("See score without weight of summative"),
 	"HELP" => bash::help(), 
 	_ => println!("Unrecognized Command\n"), 

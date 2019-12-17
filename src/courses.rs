@@ -1,3 +1,11 @@
+/**********************DEFINED IN COURSES MODULE**********************
+pub addcourse()
+pub rmcourse()
+pub view()
+pub list()
+pub gpa()
+*********************************************************************/
+
 use std::io;
 use std::io::prelude::*;
 use std::error::Error; 
@@ -43,8 +51,8 @@ pub fn addcourse() -> std::io::Result <()> {
 		let serialized = serde_json::to_string(&newcourse).unwrap(); 
 		
 		match course_file.write_all(serialized.as_bytes()) {
-			Err(why) => panic!("couldn't write to {}: {}", display, why.description()), 
-			Ok(_) => println!("successfully added course."), 
+			Err(why) => panic!("Couldn't write to {}: {}.", display, why.description()), 
+			Ok(_) => println!("Successfully added course."), 
 		}
 	}
 	else {
@@ -68,6 +76,7 @@ pub fn rmcourse() -> std::io::Result<()> {
 	
 	if path.exists() {
 		fs::remove_file(json_file_name)?;
+		println!("Course {} was successfully removed.", course_name); 
 	}
 	else {
 		println!("Nothing to remove...the course specified does not exist."); 

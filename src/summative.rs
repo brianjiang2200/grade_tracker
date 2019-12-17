@@ -1,3 +1,14 @@
+/*******************DEFINED IN SUMMATIVE MODULE********************
+pub add()
+pub edit()
+pub delete()
+pub try_grade()
+pub hide_grade()
+get_summative_info()
+compute_course_averages()
+list()
+*******************************************************************/
+
 use std::io;
 use std::io::prelude::*;
 use std::error::Error; 
@@ -48,12 +59,23 @@ pub fn add() -> std::io::Result<()> {
 		}
 		
 		if !name_taken {
+			//push new summative
 			let new_summative: Summative = Summative {
 				Name: sum_name.to_ascii_uppercase(), 
 				Score: score, 
 				Weight: weight
 			}; 
-			deserialized.Summatives.push(new_summative); 
+			deserialized.Summatives.push(new_summative);
+			
+			//compute new averages
+			deserialized.Lazy = 0; 
+			let mut cumulative = 0; 
+			for member in &deserialized.Summatives {
+				cumulative += member.Score; 
+				deserialized.Lazy += member.Score * member.Weight / 100; 
+			}
+			deserialized.Average = cumulative / deserialized.Summatives.len() as u32;
+			
 			let serialized = serde_json::to_string(&deserialized).unwrap();
 			
 			let mut course_file = OpenOptions::new()
@@ -125,6 +147,15 @@ pub fn edit() -> std::io::Result<()> {
 				deserialized.Summatives[index - 1].Score = score; 
 				deserialized.Summatives[index - 1].Weight = weight;
 				
+				//compute new averages
+				deserialized.Lazy = 0; 
+				let mut cumulative = 0; 
+				for member in &deserialized.Summatives {
+					cumulative += member.Score; 
+					deserialized.Lazy += member.Score * member.Weight / 100; 
+				}
+				deserialized.Average = cumulative / deserialized.Summatives.len() as u32;
+				
 				let serialized = serde_json::to_string(&deserialized).unwrap(); 
 				
 				let mut course_file = OpenOptions::new()
@@ -195,6 +226,18 @@ pub fn delete() -> std::io::Result<()> {
 			if index <= deserialized.Summatives.len() {
 			
 				deserialized.Summatives.remove(index - 1);
+				
+				//compute new averages
+				deserialized.Lazy = 0; 
+				let mut cumulative = 0; 
+				for member in &deserialized.Summatives {
+					cumulative += member.Score; 
+					deserialized.Lazy += member.Score * member.Weight / 100; 
+				}
+				if deserialized.Summatives.len() > 0 {
+					deserialized.Average = cumulative / deserialized.Summatives.len() as u32;
+				}
+				
 				let serialized = serde_json::to_string(&deserialized).unwrap(); 
 				
 				let mut course_file = OpenOptions::new()
@@ -228,6 +271,124 @@ pub fn delete() -> std::io::Result<()> {
 	Ok(())
 }
 
+pub fn try_grade() -> std::io::Result<()> {
+	let mut course_name = String::new();
+	println!("Course Name/Code:"); 
+	io::stdin().read_line(&mut course_name)
+		.expect("Failed to read Course Name"); 
+	course_name = String::from(course_name.trim().to_string()); 
+	
+	let mut sum_name = String::new();
+	let mut score = 0;
+	let mut weight = 0;
+	
+	//Find correct File 
+	let json_file_name = jsondata::new_json(&course_name);
+	let path = Path::new(&json_file_name);
+	
+	if path.exists() {
+		list(&json_file_name)?;
+		
+		//ask for new summative info
+		get_summative_info(&mut sum_name, &mut score, &mut weight); 
+		
+		let contents = fs::read_to_string(&json_file_name)?; 
+		let mut deserialized: Course = serde_json::from_str(&contents)?;
+		
+		//push new summative
+		let new_summative: Summative = Summative {
+			Name: sum_name.to_ascii_uppercase(), 
+			Score: score, 
+			Weight: weight
+		}; 
+		deserialized.Summatives.push(new_summative);
+			
+		//compute new averages
+		deserialized.Lazy = 0; 
+		let mut cumulative = 0; 
+		for member in &deserialized.Summatives {
+			cumulative += member.Score; 
+			deserialized.Lazy += member.Score * member.Weight / 100; 
+		}
+		deserialized.Average = cumulative / deserialized.Summatives.len() as u32;
+		
+		//DO NOT SAVE TO FILE
+		
+		println!("Hypothetical Average: {}", deserialized.Average); 
+		println!("Lazy Average: {}", deserialized.Lazy);
+		
+	}
+	else {
+		println!("Terminating process...The course {} does not exist.", course_name); 
+	}
+		
+	Ok(())
+}
+
+pub fn hide_grade() -> std::io::Result<()> {
+	let mut course_name = String::new();
+	println!("Course Name/Code:"); 
+	io::stdin().read_line(&mut course_name)
+		.expect("Failed to read Course Name"); 
+	course_name = String::from(course_name.trim().to_string()); 
+	
+	let mut sum_name = String::new();
+	
+	//Find correct File 
+	let json_file_name = jsondata::new_json(&course_name);
+	let path = Path::new(&json_file_name);
+	
+	if path.exists() {
+		list(&json_file_name)?;
+		
+		let mut index = 0; 
+		loop {
+			let mut cand = String::new(); 
+			println!("Enter the index of the summative to hide from the list above");
+			io::stdin().read_line(&mut cand)
+				.expect("Failed to read input"); 
+			index = match cand.trim().parse() {
+				Ok(num) => num, 
+				Err(_) => continue,
+			};
+			break; 
+		} 
+			
+		if index > 0 { 
+			
+			let contents = fs::read_to_string(&json_file_name)?;
+			let mut deserialized: Course = serde_json::from_str(&contents)?;
+			
+			if index <= deserialized.Summatives.len() {
+			
+				deserialized.Summatives.remove(index - 1);
+				
+				//compute new averages
+				deserialized.Lazy = 0; 
+				let mut cumulative = 0; 
+				for member in &deserialized.Summatives {
+					cumulative += member.Score; 
+					deserialized.Lazy += member.Score * member.Weight / 100; 
+				}
+				if deserialized.Summatives.len() > 0 {
+					deserialized.Average = cumulative / deserialized.Summatives.len() as u32;
+				}
+				
+				println!("Hypothetical Average: {}", deserialized.Average); 
+				println!("Lazy Average: {}", deserialized.Lazy);
+			}
+			else {
+				println!("Terminating process gracefully...Invalid index."); 
+			}
+		}
+	}
+	else {
+		println!("Terminating process...The course {} does not exist.", course_name); 
+	}
+		
+	Ok(())
+}
+
 //non public function
 fn get_summative_info(sum_name: &mut String, score: &mut u32, weight: &mut u32) { 
 
@@ -239,9 +400,9 @@ fn get_summative_info(sum_name: &mut String, score: &mut u32, weight: &mut u32) 
 	//loop process while input is invalid
 	loop {
 		let mut cand = String::new();
-		println!("Score (% or fractional):"); 
+		println!("Score (% Or Fractional):"); 
 		io::stdin().read_line(&mut cand)
-			.expect("Failed to read score"); 
+			.expect("Failed to Read Score"); 
 		*score = match cand.trim().parse() {
 			Ok(num) => num, 
 			Err(_) => continue,
@@ -252,7 +413,7 @@ fn get_summative_info(sum_name: &mut String, score: &mut u32, weight: &mut u32) 
 	//loop process while input is invalid
 	loop {
 		let mut cand = String::new(); 
-		println!("Weight (percentage):"); 
+		println!("Weight (%):"); 
 		io::stdin().read_line(&mut cand)
 			.expect("Failed to read weight"); 
 		*weight = match cand.trim().parse() {
@@ -270,10 +431,10 @@ fn list(file_name: &String) -> std::io::Result<()> {
 		
 	println!("Existing Summatives:"); 
 		
-	println!("\t0.Cancel"); 
+	println!("\t0. Cancel Current Operation"); 
 	let mut k = 0; 
 	while !course["Summatives"][k].is_null() {
-		println!("\t{}.Name: {}", k + 1, course["Summatives"][k]["Name"]);
+		println!("\t{}. {}", k + 1, course["Summatives"][k]["Name"]);
 		k += 1;
 	}
 	
