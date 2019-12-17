@@ -37,35 +37,38 @@ fn main() {
 
 fn process(command: &String) { 
 	match command.as_ref() {
-	"ADDCOURSE" => courses::addcourse(),
-	"RMCOURSE" => {
-		match courses::rmcourse() {
-			Ok(()) => println!("Successfully removed course.\n"), 
-			Err(why) => println!("Removing course was unsuccessful: {}\n", why) 
-		}
+	"ADDCOURSE" => match courses::addcourse() {
+		Ok(()) => println!("\n"), 
+		Err(why) => println!("Adding course was unsuccessful: {}\n", why) 
 	},
-	"VIEW" => {
-		match courses::view() {
-			Ok(()) => println!("\n"), 
-			Err(why) => println!("Could not view specified course: {}\n", why)
-		}
+	"RMCOURSE" => match courses::rmcourse() {
+		Ok(()) => println!("\n"), 
+		Err(why) => println!("Removing course was unsuccessful: {}\n", why) 
 	},
-	"LIST" => {
-		match courses::list() {
-			Ok(()) => println!("\n"),
-			Err(why) => println!("Could not list courses: {}\n", why)
-		}
+	"VIEW" => match courses::view() {
+		Ok(()) => println!("\n"), 
+		Err(why) => println!("Could not view specified course: {}\n", why)
 	},
-	"AVG" => {
-		match courses::gpa() {
-			Ok(()) => println!("\n"), 
-			Err(why) => println!("Could not compute gpa: {}\n", why)
-		}
+	"LIST" => match courses::list() {
+		Ok(()) => println!("\n"),
+		Err(why) => println!("Could not list courses: {}\n", why)
+	},
+	"AVG" => match courses::gpa() {
+		Ok(()) => println!("\n"), 
+		Err(why) => println!("Could not compute gpa: {}\n", why)
 	}, 
 	"ADD" => match summative::add() {
-		Ok(()) => println!("Successfully added summative\n"), 
-		Err(why) => println!("Could not add summative\n")
-	}, 
+		Ok(()) => println!("\n"), 
+		Err(why) => println!("Could not add summative: {}\n", why)
+	},
+	"EDIT" => match summative::edit() {
+		Ok(()) => println!("\n"), 
+		Err(why) => println!("Could not edit summative: {}\n", why)
+	},
+	"DEL" => match summative::delete() {
+		Ok(()) => println!("\n"),
+		Err(why) => println!("Could not delete summative: {}\n", why)
+	},
 	"TRY" => println!("View impact of hypothetical score"), 
 	"HIDE" => println!("See score without weight of summative"),
 	"HELP" => bash::help(), 

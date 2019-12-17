@@ -21,16 +21,16 @@ pub fn new_json(course_name: &String) -> String {
  }
  
  #[derive(Serialize, Deserialize)]
- struct Course {
-	courseName: String, 
-	Average: u32, 
-	Lazy: u32, 
-	Summatives: Vec<Summative>, 
+ pub struct Course {
+	pub courseName: String, 
+	pub Average: u32, 
+	pub Lazy: u32, 
+	pub Summatives: Vec<Summative>, 
 }
 
 #[derive(Serialize, Deserialize)]
-struct Summative {
-	Name: String, 
-	Score: u32,
-	Weight: u32,
+pub struct Summative {
+	pub Name: String, 
+	pub Score: u32,
+	pub Weight: u32,
 }

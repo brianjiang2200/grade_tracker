@@ -1,14 +1,17 @@
 use std::io;
+use std::io::prelude::*;
 use std::error::Error; 
 use std::fs;
 use std::fs::File;
+use std::fs::OpenOptions;
 use std::path::Path; 
- 
+
 use serde_json::Value;
 use serde::{Serialize, Deserialize}; 
 
 #[path = "jsondata.rs"]
-mod jsondata; 
+pub mod jsondata;
+use crate::jsondata::{Course, Summative};  
 
 pub fn add() -> std::io::Result<()> {
 
@@ -27,32 +30,39 @@ pub fn add() -> std::io::Result<()> {
 	let path = Path::new(&json_file_name);
 	
 	if path.exists() {
-		list(&json_file_name)?; 
+		list(&json_file_name)?;
 		
 		//ask for new summative info
 		get_summative_info(&mut sum_name, &mut score, &mut weight); 
 		
-		let contents = fs::read_to_string(json_file_name)?; 
-		let deserialized: Course = serde_json::from_str(contents).unwrap(); 
+		let contents = fs::read_to_string(&json_file_name)?; 
+		let mut deserialized: Course = serde_json::from_str(&contents)?; 
 		
 		//check if a summative already uses the provided name
 		let mut name_taken = false; 
 		for entry in &deserialized.Summatives {
-			if entry.Name == sum_name {
+			if entry.Name == sum_name.to_ascii_uppercase() {
 				name_taken = true; 
 				break; 
 			}
 		}
 		
 		if !name_taken {
-			let new_summative: Summative = Summative {Name: sum_name, Score: score, Weight: weight}; 
-			deserialized.Summatives.push(new_summative); 
-			let serialized = serde_json::to_string(&deserialized).unwrap(); 
-			
-			let mut course_file = match File::open(&path) {
-				Err(why) => panic!("Could not open file to add summative information...{}", why.description()), 
-				Ok(course_file) => course_file,
+			let new_summative: Summative = Summative {
+				Name: sum_name.to_ascii_uppercase(), 
+				Score: score, 
+				Weight: weight
 			}; 
+			deserialized.Summatives.push(new_summative); 
+			let serialized = serde_json::to_string(&deserialized).unwrap();
+			
+			let mut course_file = OpenOptions::new()
+				.read(true)
+				.write(true)
+				.open(&path)
+				.expect("Found course file...but it failed to open.");
+				
+			course_file.set_len(0)?;
 			
 			match course_file.write_all(serialized.as_bytes()) {
 				Err(why) => panic!("Could not write summative information to file...{}", why.description()), 
@@ -90,7 +100,7 @@ pub fn edit() -> std::io::Result<()> {
 	
 		list(&json_file_name)?; 
 		
-		let mut index = -1; 
+		let mut index = 0; 
 		loop {
 			let mut cand = String::new(); 
 			println!("Enter the index of the summative to edit from the list above");
@@ -103,24 +113,29 @@ pub fn edit() -> std::io::Result<()> {
 			break; 
 		}
 		
-		if (index > 0) {
+		if index > 0 {
 			get_summative_info(&mut sum_name, &mut score, &mut weight); 
 			
-			let contents = fs::read_to_string(json_file_name)?;
-			let course_object: Value = serde_json::from_str(&contents).unwrap();
+			let contents = fs::read_to_string(&json_file_name)?;
+			let mut deserialized: Course = serde_json::from_str(&contents)?;
 			
-			if !course["Summatives"][index - 1].is_null() {
+			if index <= deserialized.Summatives.len() {
 			
-				course_object["Summatives"][index - 1]["Name"] = sum_name.to_ascii_uppercase(); 
-				course_object["Summatives"][index - 1]["Score"] = score; 
-				course_object["Summatives"][index - 1]["Weight"] = weight;
+				deserialized.Summatives[index - 1].Name = sum_name.to_ascii_uppercase(); 
+				deserialized.Summatives[index - 1].Score = score; 
+				deserialized.Summatives[index - 1].Weight = weight;
 				
-				let mut course_file = match File::open(&path) {
-					Err(why) => panic!("Could not open file to add summative information...{}", why.description()),
-					Ok(course_file) => course_file,
-				}; 
-			
-				match course_file.write_all(course_object.dump().as_bytes()) {
+				let serialized = serde_json::to_string(&deserialized).unwrap(); 
+				
+				let mut course_file = OpenOptions::new()
+					.read(true)
+					.write(true)
+					.open(&path)
+					.expect("Found course file...but it failed to open."); 
+				
+				course_file.set_len(0)?;
+				
+				match course_file.write_all(serialized.as_bytes()) {
 					Err(why) => panic!("Could not write summative information to file...{}", why.description()),
 					Ok(_) => println!("Successfully edited Summative."),
 				}
@@ -151,50 +166,59 @@ pub fn delete() -> std::io::Result<()> {
 		.expect("Failed to read Course Name"); 
 	course_name = String::from(course_name.trim().to_string()); 
 	
-	let mut sum_name = String::new();
-	let mut score = 0;
-	let mut weight = 0;
-	
-	let mut summative_exists = false; 
-	
 	//Find correct File 
 	let json_file_name = jsondata::new_json(&course_name);
 	let path = Path::new(&json_file_name);
 	
 	if path.exists() {
+	
 		list(&json_file_name)?; 
 		
-		//get summative name only
-		println!("Summative Name: ");
-		io::stdin().read_line(&mut sum_name)
-			.expect("Failed to read summative name.");
-		sum_name = String::from(sum_name.trim().to_string()); 
-		
-		let contents = fs::read_to_string(json_file_name)?; 
-		let deserialized: Course = serde_json::from_str(contents).unwrap(); 
-		
-		for entry in deserialized.Summatives {
-			if entry.Name == sum_name {
-				summative_exists = true; 
-				deserialized.Summatives.remove(entry); 
-				let serialized = serde_json::to_string(&deserialized).unwrap(); 
-					
-				let mut course_file = match File::open(&path) {
-					Err(why) => panic!("Could not open file to delete summative info...{}", why.description()),
-					Ok(course_file) => course_file,
-				};
-					
-				match course_file.write_all(serialized.as_bytes()) {
-					Err(why) => panic!("Could not write update course data to file...{}", why.description()), 
-					Ok(_) => println!("Successfully edited course data."),
-				}
-					
-				break;
-			}
+		let mut index = 0; 
+		loop {
+			let mut cand = String::new(); 
+			println!("Enter the index of the summative to delete from the list above");
+			io::stdin().read_line(&mut cand)
+				.expect("Failed to read input"); 
+			index = match cand.trim().parse() {
+				Ok(num) => num, 
+				Err(_) => continue,
+			};
+			break; 
 		}
 		
-		if !summative_exists {
-			println!("Nothing to remove...The summative {} does not exist", sum_name);
+		if index > 0 { 
+			
+			let contents = fs::read_to_string(&json_file_name)?;
+			let mut deserialized: Course = serde_json::from_str(&contents)?;
+			
+			if index <= deserialized.Summatives.len() {
+			
+				deserialized.Summatives.remove(index - 1);
+				let serialized = serde_json::to_string(&deserialized).unwrap(); 
+				
+				let mut course_file = OpenOptions::new()
+					.read(true)
+					.write(true)
+					.open(&path)
+					.expect("Found course file...but it failed to open.");
+					
+				course_file.set_len(0)?; 
+			
+				match course_file.write_all(serialized.as_bytes()) {
+					Err(why) => panic!("Could not write summative information to file...{}", why.description()),
+					Ok(_) => println!("Successfully deleted Summative."),
+				}
+			}
+			
+			else {
+				println!("Terminating Process Gracefully...Invalid Index");
+				return Ok(()); 
+			}
+			
+		}
+		else {
+			return Ok(());
 		}
 	}
 	else {
@@ -244,11 +268,12 @@ fn list(file_name: &String) -> std::io::Result<()> {
 	let contents = fs::read_to_string(file_name)?;
 	let course: Value = serde_json::from_str(&contents).unwrap(); 
 		
-	println!("\nSummatives:"); 
+	println!("Existing Summatives:"); 
 		
+	println!("\t0.Cancel"); 
 	let mut k = 0; 
-	while !course[Summatives"][k].is_null() {
-		println!("\t{}.Name: {}", k, course[Summatives"][k]["Name"]);
+	while !course["Summatives"][k].is_null() {
+		println!("\t{}.Name: {}", k + 1, course["Summatives"][k]["Name"]);
 		k += 1;
 	}
 	

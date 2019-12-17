@@ -11,11 +11,17 @@ pub fn help() {
   println!("list"); 
   println!("\tList all registered courses"); 
   
-  println!("gpa"); 
+  println!("avg"); 
   println!("\tView cumulative average over all courses"); 
   
   println!("add"); 
-  println!("\tAdd a new summative"); 
+  println!("\tAdd a new summative");
+
+  println!("edit"); 
+  println!("\tEdit an existing summative"); 
+  
+  println!("del"); 
+  println!("\tDelete an existing summative"); 
   
   println!("try");
   println!("\tView how a summative would hypothetically impact your mark"); 

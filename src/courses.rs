@@ -7,15 +7,14 @@ use std::path::Path;
 
 use glob::glob; 
 
-use json; 
-use json::object;
 use serde::{Serialize, Deserialize}; 
 use serde_json::Value; 
 
 #[path = "jsondata.rs"]
-mod jsondata;  
+mod jsondata;
+use crate::jsondata::{Course, Summative}; 
 
-pub fn addcourse() {
+pub fn addcourse() -> std::io::Result <()> {
 	//Enter Course Name
 	let mut course_name = String::new(); 
 	println!("Course Name/Code:");
@@ -29,25 +28,30 @@ pub fn addcourse() {
 	let path = Path::new(&json_file_name); 
 	let display = path.display(); 
 	
-	let mut course_file = match File::create(&path) {
-		Err(why) => panic!("couldn't create {}: {}", display, why.description()),
-		Ok(course_file) => course_file,
-	};
-	
-	//create JSON object
-	let course_object = object!{
-		"courseName" => course_name.to_ascii_uppercase(),
-		"Average" => 0,
-		"Lazy" => 0,
-		"Summatives" => []
-	};
-	
-	match course_file.write_all(course_object.dump().as_bytes()) {
-		Err(why) => panic!("couldn't write to {}: {}", display, why.description()), 
-		Ok(_) => println!("successfully added course."), 
+	if !path.exists() {
+		let mut course_file = match File::create(&path) {
+			Err(why) => panic!("couldn't create {}: {}", display, why.description()),
+			Ok(course_file) => course_file,
+		};
+		
+		let newcourse: Course = Course { 
+			courseName: course_name.to_ascii_uppercase(),
+			Average: 0, 
+			Lazy: 0, 
+			Summatives: Vec::new()
+		};
+		let serialized = serde_json::to_string(&newcourse).unwrap(); 
+		
+		match course_file.write_all(serialized.as_bytes()) {
+			Err(why) => panic!("couldn't write to {}: {}", display, why.description()), 
+			Ok(_) => println!("successfully added course."), 
+		}
+	}
+	else {
+		println!("A course by this name already exists."); 
 	}
 	
-	println!("\n"); 
+	Ok(())
 }
 
 pub fn rmcourse() -> std::io::Result<()> {
@@ -60,8 +64,14 @@ pub fn rmcourse() -> std::io::Result<()> {
 	//delete JSON File
 	course_name = course_name.trim().to_string(); 
 	let json_file_name = jsondata::new_json(&course_name);  
+	let path = Path::new(&json_file_name); 
 	
-	fs::remove_file(json_file_name)?; 
+	if path.exists() {
+		fs::remove_file(json_file_name)?;
+	}
+	else {
+		println!("Nothing to remove...the course specified does not exist."); 
+	}
 	
 	Ok(())
 }
@@ -82,9 +92,8 @@ pub fn view() -> std::io::Result<()> {
 		let contents = fs::read_to_string(json_file_name)?;
 		let course: Value = serde_json::from_str(&contents).unwrap();  
 
-		//print Summatives
-		println!("\n"); 
-		println!("Summatives:");
+		//print Summatives 
+		println!("\nSummatives:");
 	
 		let mut k = 0; 
 		while !course["Summatives"][k].is_null() {
@@ -96,7 +105,7 @@ pub fn view() -> std::io::Result<()> {
 		}
 	
 		println!("Current/Projected Average: {}", course["Average"]); 
-		println!("Lazy Average: {}", course["Lazy Average"]);
+		println!("Lazy Average: {}", course["Lazy"]);
 	}
 	
 	else {
