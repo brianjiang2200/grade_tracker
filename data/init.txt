@@ -1,0 +1,1 @@
+For the purposes of initializing the data folder in github. May be deleted after download. 
