@@ -27,7 +27,7 @@ use crate::jsondata::{Course, Summative};
 pub fn add() -> std::io::Result<()> {
 
 	let mut course_name = String::new();
-	println!("Course Name/Code:"); 
+	println!("Course Name/Code: "); 
 	io::stdin().read_line(&mut course_name)
 		.expect("Failed to read Course Name"); 
 	course_name = String::from(course_name.trim().to_string()); 
@@ -41,6 +41,7 @@ pub fn add() -> std::io::Result<()> {
 	let path = Path::new(&json_file_name);
 	
 	if path.exists() {
+	
 		list(&json_file_name)?;
 		
 		//ask for new summative info
@@ -74,7 +75,7 @@ pub fn add() -> std::io::Result<()> {
 				cumulative += member.Score; 
 				deserialized.Lazy += member.Score * member.Weight / 100.0; 
 			}
-			deserialized.Average = cumulative / deserialized.Summatives.len() as f64;
+			deserialized.Average = cumulative / deserialized.Summatives.len() as f64; 
 			
 			let serialized = serde_json::to_string(&deserialized).unwrap();
 			
@@ -105,7 +106,7 @@ pub fn add() -> std::io::Result<()> {
 pub fn edit() -> std::io::Result<()> {
 	
 	let mut course_name = String::new();
-	println!("Course Name/Code:"); 
+	println!("Course Name/Code: "); 
 	io::stdin().read_line(&mut course_name)
 		.expect("Failed to read Course Name"); 
 	course_name = String::from(course_name.trim().to_string()); 
@@ -125,7 +126,7 @@ pub fn edit() -> std::io::Result<()> {
 		let mut index = 0; 
 		loop {
 			let mut cand = String::new(); 
-			println!("Enter the index of the summative to edit from the list above");
+			println!("Enter the index of the summative to edit from the list above (or 0 to cancel)");
 			io::stdin().read_line(&mut cand)
 				.expect("Failed to read input"); 
 			index = match cand.trim().parse() {
@@ -136,12 +137,16 @@ pub fn edit() -> std::io::Result<()> {
 		}
 		
 		if index > 0 {
-			get_summative_info(&mut sum_name, &mut score, &mut weight); 
 			
 			let contents = fs::read_to_string(&json_file_name)?;
 			let mut deserialized: Course = serde_json::from_str(&contents)?;
 			
 			if index <= deserialized.Summatives.len() {
+			
+				println!("Current Course Name: {}", deserialized.Summatives[index - 1].Name); 
+				println!("Current Score: {}", deserialized.Summatives[index - 1].Score); 
+				println!("Current Weight: {}", deserialized.Summatives[index - 1].Weight); 
+				get_summative_info(&mut sum_name, &mut score, &mut weight); 
 			
 				deserialized.Summatives[index - 1].Name = sum_name.to_ascii_uppercase(); 
 				deserialized.Summatives[index - 1].Score = score; 
@@ -173,12 +178,13 @@ pub fn edit() -> std::io::Result<()> {
 			}
 			
 			else {
-				println!("Terminating Process Gracefully...Invalid Index");
+				println!("Terminating Process...Invalid Index");
 				return Ok(()); 
 			}
 			
 		}
 		else {
+			println!("Operation cancelled.");
 			return Ok(());
 		}
 	}
@@ -192,7 +198,7 @@ pub fn edit() -> std::io::Result<()> {
 pub fn delete() -> std::io::Result<()> {
 
 	let mut course_name = String::new();
-	println!("Course Name/Code:"); 
+	println!("Course Name/Code: "); 
 	io::stdin().read_line(&mut course_name)
 		.expect("Failed to read Course Name"); 
 	course_name = String::from(course_name.trim().to_string()); 
@@ -202,13 +208,13 @@ pub fn delete() -> std::io::Result<()> {
 	let path = Path::new(&json_file_name);
 	
 	if path.exists() {
-	
+			
 		list(&json_file_name)?; 
 		
 		let mut index = 0; 
 		loop {
 			let mut cand = String::new(); 
-			println!("Enter the index of the summative to delete from the list above");
+			println!("Enter the index of the summative to delete from the list above (or 0 to cancel)");
 			io::stdin().read_line(&mut cand)
 				.expect("Failed to read input"); 
 			index = match cand.trim().parse() {
@@ -255,12 +261,13 @@ pub fn delete() -> std::io::Result<()> {
 			}
 			
 			else {
-				println!("Terminating Process Gracefully...Invalid Index");
+				println!("Terminating Process...Invalid Index");
 				return Ok(()); 
 			}
 			
 		}
 		else {
+			println!("Operation cancelled."); 
 			return Ok(());
 		}
 	}
@@ -273,7 +280,7 @@ pub fn delete() -> std::io::Result<()> {
 
 pub fn try_grade() -> std::io::Result<()> {
 	let mut course_name = String::new();
-	println!("Course Name/Code:"); 
+	println!("Course Name/Code: "); 
 	io::stdin().read_line(&mut course_name)
 		.expect("Failed to read Course Name"); 
 	course_name = String::from(course_name.trim().to_string()); 
@@ -327,7 +334,7 @@ pub fn try_grade() -> std::io::Result<()> {
 
 pub fn hide_grade() -> std::io::Result<()> {
 	let mut course_name = String::new();
-	println!("Course Name/Code:"); 
+	println!("Course Name/Code: "); 
 	io::stdin().read_line(&mut course_name)
 		.expect("Failed to read Course Name"); 
 	course_name = String::from(course_name.trim().to_string()); 
@@ -337,12 +344,13 @@ pub fn hide_grade() -> std::io::Result<()> {
 	let path = Path::new(&json_file_name);
 	
 	if path.exists() {
+	
 		list(&json_file_name)?;
 		
 		let mut index = 0; 
 		loop {
 			let mut cand = String::new(); 
-			println!("Enter the index of the summative to hide from the list above");
+			println!("Enter the index of the summative to hide from the list above (or 0 to cancel)");
 			io::stdin().read_line(&mut cand)
 				.expect("Failed to read input"); 
 			index = match cand.trim().parse() {
@@ -378,8 +386,13 @@ pub fn hide_grade() -> std::io::Result<()> {
 				println!("Lazy Average: {}", deserialized.Lazy);
 			}
 			else {
-				println!("Terminating process gracefully...Invalid index."); 
+				println!("Terminating process...Invalid index.");
+				return Ok(())
 			}
+		}
+		else {
+			println!("Operation cancelled.");
+			return Ok(())
 		}
 	}
 	else {
@@ -392,7 +405,7 @@ pub fn hide_grade() -> std::io::Result<()> {
 //non public function
 fn get_summative_info(sum_name: &mut String, score: &mut f64, weight: &mut f64) { 
 
-	println!("Summative Name: "); 
+	println!("New Summative Name: "); 
 	io::stdin().read_line(sum_name)
 		.expect("Failed to read Summative Name");
 	*sum_name = String::from(sum_name.trim().to_string()); 
@@ -430,8 +443,7 @@ fn list(file_name: &String) -> std::io::Result<()> {
 	let course: Value = serde_json::from_str(&contents).unwrap(); 
 		
 	println!("Existing Summatives:"); 
-		
-	println!("\t0. Cancel Current Operation"); 
+		 
 	let mut k = 0; 
 	while !course["Summatives"][k].is_null() {
 		println!("\t{}. {}", k + 1, course["Summatives"][k]["Name"]);
