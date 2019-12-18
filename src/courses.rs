@@ -25,7 +25,7 @@ use crate::jsondata::{Course, Summative};
 pub fn addcourse() -> std::io::Result <()> {
 	//Enter Course Name
 	let mut course_name = String::new(); 
-	println!("Course Name/Code:");
+	println!("Course Name/Code: ");
 	io::stdin().read_line(&mut course_name)
 		.expect("Failed to read Course Name");
 
