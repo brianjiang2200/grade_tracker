@@ -33,8 +33,8 @@ pub fn add() -> std::io::Result<()> {
 	course_name = String::from(course_name.trim().to_string()); 
 	
 	let mut sum_name = String::new();
-	let mut score = 0;
-	let mut weight = 0;
+	let mut score = 0.0;
+	let mut weight = 0.0;
 	
 	//Find correct File 
 	let json_file_name = jsondata::new_json(&course_name);
@@ -68,13 +68,13 @@ pub fn add() -> std::io::Result<()> {
 			deserialized.Summatives.push(new_summative);
 			
 			//compute new averages
-			deserialized.Lazy = 0; 
-			let mut cumulative = 0; 
+			deserialized.Lazy = 0.0; 
+			let mut cumulative = 0.0; 
 			for member in &deserialized.Summatives {
 				cumulative += member.Score; 
-				deserialized.Lazy += member.Score * member.Weight / 100; 
+				deserialized.Lazy += member.Score * member.Weight / 100.0; 
 			}
-			deserialized.Average = cumulative / deserialized.Summatives.len() as u32;
+			deserialized.Average = cumulative / deserialized.Summatives.len() as f64;
 			
 			let serialized = serde_json::to_string(&deserialized).unwrap();
 			
@@ -111,8 +111,8 @@ pub fn edit() -> std::io::Result<()> {
 	course_name = String::from(course_name.trim().to_string()); 
 	
 	let mut sum_name = String::new();
-	let mut score = 0; 
-	let mut weight = 0; 
+	let mut score = 0.0; 
+	let mut weight = 0.0; 
 
 	//Find correct file
 	let json_file_name = jsondata::new_json(&course_name);
@@ -148,13 +148,13 @@ pub fn edit() -> std::io::Result<()> {
 				deserialized.Summatives[index - 1].Weight = weight;
 				
 				//compute new averages
-				deserialized.Lazy = 0; 
-				let mut cumulative = 0; 
+				deserialized.Lazy = 0.0; 
+				let mut cumulative = 0.0; 
 				for member in &deserialized.Summatives {
 					cumulative += member.Score; 
-					deserialized.Lazy += member.Score * member.Weight / 100; 
+					deserialized.Lazy += member.Score * member.Weight / 100.0; 
 				}
-				deserialized.Average = cumulative / deserialized.Summatives.len() as u32;
+				deserialized.Average = cumulative / deserialized.Summatives.len() as f64;
 				
 				let serialized = serde_json::to_string(&deserialized).unwrap(); 
 				
@@ -228,14 +228,14 @@ pub fn delete() -> std::io::Result<()> {
 				deserialized.Summatives.remove(index - 1);
 				
 				//compute new averages
-				deserialized.Lazy = 0; 
-				let mut cumulative = 0; 
+				deserialized.Lazy = 0.0; 
+				let mut cumulative = 0.0; 
 				for member in &deserialized.Summatives {
 					cumulative += member.Score; 
-					deserialized.Lazy += member.Score * member.Weight / 100; 
+					deserialized.Lazy += member.Score * member.Weight / 100.0; 
 				}
 				if deserialized.Summatives.len() > 0 {
-					deserialized.Average = cumulative / deserialized.Summatives.len() as u32;
+					deserialized.Average = cumulative / deserialized.Summatives.len() as f64;
 				}
 				
 				let serialized = serde_json::to_string(&deserialized).unwrap(); 
@@ -279,8 +279,8 @@ pub fn try_grade() -> std::io::Result<()> {
 	course_name = String::from(course_name.trim().to_string()); 
 	
 	let mut sum_name = String::new();
-	let mut score = 0;
-	let mut weight = 0;
+	let mut score = 0.0;
+	let mut weight = 0.0;
 	
 	//Find correct File 
 	let json_file_name = jsondata::new_json(&course_name);
@@ -304,13 +304,13 @@ pub fn try_grade() -> std::io::Result<()> {
 		deserialized.Summatives.push(new_summative);
 			
 		//compute new averages
-		deserialized.Lazy = 0; 
-		let mut cumulative = 0; 
+		deserialized.Lazy = 0.0; 
+		let mut cumulative = 0.0; 
 		for member in &deserialized.Summatives {
 			cumulative += member.Score; 
-			deserialized.Lazy += member.Score * member.Weight / 100; 
+			deserialized.Lazy += member.Score * member.Weight / 100.0; 
 		}
-		deserialized.Average = cumulative / deserialized.Summatives.len() as u32;
+		deserialized.Average = cumulative / deserialized.Summatives.len() as f64;
 		
 		//DO NOT SAVE TO FILE
 		
@@ -331,8 +331,6 @@ pub fn hide_grade() -> std::io::Result<()> {
 	io::stdin().read_line(&mut course_name)
 		.expect("Failed to read Course Name"); 
 	course_name = String::from(course_name.trim().to_string()); 
-	
-	let mut sum_name = String::new();
 	
 	//Find correct File 
 	let json_file_name = jsondata::new_json(&course_name);
@@ -364,15 +362,17 @@ pub fn hide_grade() -> std::io::Result<()> {
 				deserialized.Summatives.remove(index - 1);
 				
 				//compute new averages
-				deserialized.Lazy = 0; 
-				let mut cumulative = 0; 
+				deserialized.Lazy = 0.0; 
+				let mut cumulative = 0.0; 
 				for member in &deserialized.Summatives {
 					cumulative += member.Score; 
-					deserialized.Lazy += member.Score * member.Weight / 100; 
+					deserialized.Lazy += member.Score * member.Weight / 100.0; 
 				}
 				if deserialized.Summatives.len() > 0 {
-					deserialized.Average = cumulative / deserialized.Summatives.len() as u32;
+					deserialized.Average = cumulative / deserialized.Summatives.len() as f64;
 				}
+				
+				//DO NOT SAVE TO FILE
 				
 				println!("Hypothetical Average: {}", deserialized.Average); 
 				println!("Lazy Average: {}", deserialized.Lazy);
@@ -390,7 +390,7 @@ pub fn hide_grade() -> std::io::Result<()> {
 }
 
 //non public function
-fn get_summative_info(sum_name: &mut String, score: &mut u32, weight: &mut u32) { 
+fn get_summative_info(sum_name: &mut String, score: &mut f64, weight: &mut f64) { 
 
 	println!("Summative Name: "); 
 	io::stdin().read_line(sum_name)

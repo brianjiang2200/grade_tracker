@@ -44,8 +44,8 @@ pub fn addcourse() -> std::io::Result <()> {
 		
 		let newcourse: Course = Course { 
 			courseName: course_name.to_ascii_uppercase(),
-			Average: 0, 
-			Lazy: 0, 
+			Average: 0.0, 
+			Lazy: 0.0, 
 			Summatives: Vec::new()
 		};
 		let serialized = serde_json::to_string(&newcourse).unwrap(); 
@@ -143,7 +143,7 @@ pub fn list() -> std::io::Result<()> {
 }
 
 pub fn gpa() -> std::io::Result<()> {
-	let mut cumulative = 0; 
+	let mut cumulative = 0.0; 
 	let mut course_count = 0;
 	for entry in glob("data/*.JSON").expect("Failed to read glob pattern") {
 		match entry {
@@ -151,9 +151,9 @@ pub fn gpa() -> std::io::Result<()> {
 				let mystr = path.to_string_lossy().into_owned(); 
 				let contents = fs::read_to_string(mystr)?;
 				let course: Value = serde_json::from_str(&contents).unwrap(); 
-				cumulative += match course["Average"].as_u64() {
+				cumulative += match course["Average"].as_f64() {
 					Some(num) => num, 
-					None => 0
+					None => 0.0
 				};
 				course_count += 1;
 			},
@@ -161,7 +161,7 @@ pub fn gpa() -> std::io::Result<()> {
 		}
 	}
 	if course_count > 0 {
-		let average = cumulative as f64 /course_count as f64;
+		let average = cumulative / course_count as f64;
 		println!("{}", average);
 	}
 	else {

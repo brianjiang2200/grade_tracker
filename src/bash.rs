@@ -1,35 +1,38 @@
 //substitutes as a bash file
 
 pub fn help() {
-  println!("addcourse"); 
-  println!("\tAdd a new course"); 
+  println!("ADDCOURSE"); 
+  println!("\tAdd a New Course"); 
   
-  println!("rmcourse"); 
-  println!("\tRemove an existing course"); 
+  println!("RMCOURSE"); 
+  println!("\tRemove an Existing Course"); 
   
-  println!("view"); 
-  println!("\tView current course breakdown");
+  println!("VIEW"); 
+  println!("\tView Current Course Breakdown");
   
-  println!("list"); 
-  println!("\tList all registered courses"); 
+  println!("LIST"); 
+  println!("\tList all Registered Courses"); 
   
-  println!("avg"); 
-  println!("\tView cumulative average over all courses"); 
+  println!("AVG"); 
+  println!("\tView Cumulative Average over all Courses"); 
   
-  println!("add"); 
-  println!("\tAdd a new summative");
+  println!("ADD"); 
+  println!("\tAdd a New Summative");
 
-  println!("edit"); 
-  println!("\tEdit an existing summative"); 
+  println!("EDIT"); 
+  println!("\tEdit an Existing Summative"); 
   
-  println!("del"); 
-  println!("\tDelete an existing summative"); 
+  println!("DEL"); 
+  println!("\tDelete an Existing Summative"); 
   
-  println!("try");
-  println!("\tView how a summative would hypothetically impact your mark"); 
+  println!("TRY");
+  println!("\tView how adding a Summative would hypothetically Impact your Mark"); 
   
-  println!("hide"); 
-  println!("\tView how removing a summative would hypothetically impact your mark");
+  println!("HIDE"); 
+  println!("\tView how removing a Summative would hypothetically Impact your Mark");
+  
+  println!("QUIT/EXIT");
+  println!("\tExit Grade Tracker"); 
 
   println!("\n"); 
 }

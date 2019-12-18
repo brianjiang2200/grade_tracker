@@ -23,14 +23,14 @@ pub fn new_json(course_name: &String) -> String {
  #[derive(Serialize, Deserialize)]
  pub struct Course {
 	pub courseName: String, 
-	pub Average: u32, 
-	pub Lazy: u32, 
+	pub Average: f64, 
+	pub Lazy: f64, 
 	pub Summatives: Vec<Summative>, 
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct Summative {
 	pub Name: String, 
-	pub Score: u32,
-	pub Weight: u32,
+	pub Score: f64,
+	pub Weight: f64,
 }
