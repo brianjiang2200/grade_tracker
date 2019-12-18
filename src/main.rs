@@ -73,7 +73,10 @@ fn process(command: &String) {
 		Ok(()) => println!("\n"), 
 		Err(why) => println!("Could not show hypothetical grade {}\n", why)
 	},
-	"HIDE" => println!("See score without weight of summative"),
+	"HIDE" => match summative::hide_grade() {
+		Ok(()) => println!("\n"),
+		Err(why) => println!("Could not hide grade {}\n", why)
+	},
 	"HELP" => bash::help(), 
 	_ => println!("Unrecognized Command\n"), 
 	}
